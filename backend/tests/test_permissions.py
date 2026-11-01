@@ -42,6 +42,13 @@ def test_only_admin_can_add_members(api, board, admin_user, member_user, outside
     assert Membership.objects.filter(board=board, user=outsider).exists()
 
 
+def test_board_owner_cannot_be_demoted(api, board, admin_user):
+    url = f"/api/boards/{board.id}/members/"
+    res = api(admin_user).post(url, {"username": "alice", "role": "member"}, format="json")
+    assert res.status_code == 403
+    assert Membership.objects.get(board=board, user=admin_user).role == Membership.Role.ADMIN
+
+
 def test_member_cannot_add_column_but_admin_can(api, board, admin_user, member_user):
     payload = {"board": board.id, "title": "Review"}
     assert api(member_user).post("/api/columns/", payload, format="json").status_code == 403

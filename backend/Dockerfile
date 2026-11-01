@@ -11,6 +11,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Collect static files at build time (a throwaway key is enough for this step).
+RUN DJANGO_SECRET_KEY=build-only python manage.py collectstatic --noinput
+
 # Run as a non-root user.
 RUN useradd --create-home appuser && chown -R appuser /app
 USER appuser

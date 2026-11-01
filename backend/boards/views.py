@@ -63,6 +63,8 @@ class BoardViewSet(viewsets.ModelViewSet):
 
         serializer = AddMemberSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        if serializer.validated_data["username"].pk == board.owner_id:
+            raise PermissionDenied("The board owner's role can't be changed.")
         membership, _ = Membership.objects.update_or_create(
             board=board,
             user=serializer.validated_data["username"],

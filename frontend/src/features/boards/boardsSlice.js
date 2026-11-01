@@ -78,6 +78,7 @@ const boardsSlice = createSlice({
       })
       .addCase(fetchBoard.pending, (state) => {
         state.status = "loading";
+        state.error = null;
       })
       .addCase(fetchBoard.fulfilled, (state, action) => {
         state.status = "idle";

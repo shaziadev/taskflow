@@ -1,7 +1,10 @@
 # TaskFlow — Team Project Management App
 
-A Kanban-style task manager for small teams. Create boards, invite teammates with **admin** or **member** roles, drag tasks between columns, and get an **email reminder** before a task is due.
+A Kanban-style task manager for small teams. Create boards, add teammates with **admin** or **member** roles (via the API), drag tasks between columns, and get an **email reminder** before a task is due.
 
+No hosted demo: `docker compose up --build` runs the full stack locally (see [Getting started](#getting-started)).
+
+[![CI](https://github.com/shaziadev/taskflow/actions/workflows/ci.yml/badge.svg)](https://github.com/shaziadev/taskflow/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 ![Django](https://img.shields.io/badge/Django-5-092E20?logo=django&logoColor=white)
 ![DRF](https://img.shields.io/badge/Django%20REST%20Framework-3.15-A30000)
@@ -17,7 +20,7 @@ A Kanban-style task manager for small teams. Create boards, invite teammates wit
 
 - **JWT authentication** — register, log in, and automatic access-token refresh in the React client (Axios interceptor).
 - **Role-based access control** — every board has *admins* (manage board, columns and members) and *members* (create, edit and move tasks). Users only ever see boards they belong to.
-- **Kanban boards** — new boards start with *To Do / In Progress / Done*; admins can add more columns.
+- **Kanban boards** — new boards start with *To Do / In Progress / Done*; admins can add more columns via the API.
 - **Drag-and-drop** — built with `@hello-pangea/dnd`. The UI updates optimistically and the order is saved through a dedicated `move` endpoint that runs in a database transaction with row locks.
 - **Background jobs** — a Celery task, scheduled hourly by Celery beat, emails assignees about tasks due in the next 24 hours (each task is reminded once).
 - **Tests** — Pytest for the API (auth, permissions, ordering, reminders) and Vitest + React Testing Library for the frontend.
@@ -76,6 +79,7 @@ Reminder emails are printed to the `celery-worker` logs by default (`docker comp
 cd backend
 python -m venv venv && source venv/bin/activate
 pip install -r requirements-dev.txt
+export DJANGO_DEBUG=True   # development mode (DEBUG is off by default)
 python manage.py migrate
 python manage.py runserver
 ```
@@ -135,7 +139,7 @@ taskflow/
 │   ├── accounts/         # register / login (JWT) / me
 │   ├── boards/
 │   │   ├── models.py     # Board, Membership, Column, Task
-│   │   ├── permissions.py# role-based access rules
+│   │   ├── permissions.py  # role-based access rules
 │   │   ├── services.py   # create_board, move_task (ordering logic)
 │   │   ├── tasks.py      # Celery reminder job
 │   │   └── views.py      # DRF viewsets

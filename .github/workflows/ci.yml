@@ -24,6 +24,7 @@ jobs:
           --health-cmd pg_isready --health-interval 5s --health-retries 10
     env:
       DATABASE_URL: postgres://taskflow:taskflow@localhost:5432/taskflow
+      DJANGO_SECRET_KEY: ci-only-secret-key
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

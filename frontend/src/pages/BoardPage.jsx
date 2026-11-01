@@ -17,12 +17,16 @@ export default function BoardPage() {
   const { boardId } = useParams();
   const dispatch = useDispatch();
   const board = useSelector((state) => state.boards.current);
+  const error = useSelector((state) => state.boards.error);
 
   useEffect(() => {
     dispatch(fetchBoard(boardId));
   }, [dispatch, boardId]);
 
-  if (!board || String(board.id) !== boardId) return <p className="text-slate-500">Loading board…</p>;
+  if (!board || String(board.id) !== boardId) {
+    if (error) return <p className="text-red-600">Couldn't load this board: {error}</p>;
+    return <p className="text-slate-500">Loading board…</p>;
+  }
 
   // Called by @hello-pangea/dnd when a card is dropped.
   const onDragEnd = ({ draggableId, source, destination }) => {
