@@ -1,0 +1,59 @@
+# Full TaskFlow stack: `docker compose up --build`
+#   Frontend → http://localhost:3000
+#   API      → http://localhost:8000/api/
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: taskflow
+      POSTGRES_USER: taskflow
+      POSTGRES_PASSWORD: taskflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskflow"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+
+  backend:
+    build: ./backend
+    env_file: .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  celery-worker:
+    build: ./backend
+    command: celery -A config worker --loglevel=info
+    env_file: .env
+    depends_on:
+      - backend
+      - redis
+
+  celery-beat:
+    build: ./backend
+    command: celery -A config beat --loglevel=info --schedule /tmp/celerybeat-schedule
+    env_file: .env
+    depends_on:
+      - backend
+      - redis
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8000/api
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
